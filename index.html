@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>개인 대시보드</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 왼쪽 메인 메뉴 -->
+        <aside class="sidebar-left">
+            <div class="logo">
+                <h1>📊 Dashboard</h1>
+            </div>
+            <nav class="main-menu">
+                <ul>
+                    <li><a href="#writing" class="menu-item active" data-page="writing">
+                        <span class="icon">✍️</span>
+                        <span class="text">글쓰기</span>
+                    </a></li>
+                    <li><a href="#book-summary" class="menu-item" data-page="book-summary">
+                        <span class="icon">📚</span>
+                        <span class="text">독서요약</span>
+                    </a></li>
+                    <li><a href="#youtube-summary" class="menu-item" data-page="youtube-summary">
+                        <span class="icon">🎥</span>
+                        <span class="text">유튜브요약</span>
+                    </a></li>
+                    <li><a href="#prompt-creation" class="menu-item" data-page="prompt-creation">
+                        <span class="icon">💡</span>
+                        <span class="text">프롬프트제작</span>
+                    </a></li>
+                    <li><a href="#vibe-coding" class="menu-item" data-page="vibe-coding">
+                        <span class="icon">💻</span>
+                        <span class="text">바이브코딩</span>
+                    </a></li>
+                    <li><a href="#design" class="menu-item" data-page="design">
+                        <span class="icon">🎨</span>
+                        <span class="text">설계</span>
+                    </a></li>
+                    <li><a href="#real-estate" class="menu-item" data-page="real-estate">
+                        <span class="icon">🏠</span>
+                        <span class="text">부동산정보</span>
+                    </a></li>
+                    <li><a href="#stock" class="menu-item" data-page="stock">
+                        <span class="icon">📈</span>
+                        <span class="text">주식정보</span>
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 메인 컨텐츠 영역 -->
+        <main class="main-content">
+            <div class="content-header">
+                <h2 id="page-title">글쓰기</h2>
+                <div class="header-actions">
+                    <button class="btn-icon" id="btn-refresh">🔄</button>
+                    <button class="btn-icon" id="btn-settings">⚙️</button>
+                </div>
+            </div>
+
+            <div class="content-body">
+                <!-- 글쓰기 페이지 -->
+                <div id="writing-page" class="page active">
+                    <div class="page-content">
+                        <h3>새 글 작성</h3>
+                        <div class="editor-container">
+                            <input type="text" class="input-title" placeholder="제목을 입력하세요">
+                            <textarea class="editor" placeholder="내용을 작성하세요..."></textarea>
+                            <div class="editor-actions">
+                                <button class="btn btn-primary">저장</button>
+                                <button class="btn btn-secondary">임시저장</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 독서요약 페이지 -->
+                <div id="book-summary-page" class="page">
+                    <div class="page-content">
+                        <h3>독서 요약 관리</h3>
+                        <div class="card-grid">
+                            <div class="card">
+                                <h4>최근 독서 요약</h4>
+                                <p>독서한 책의 요약을 작성하고 관리하세요.</p>
+                                <button class="btn btn-primary">새 요약 작성</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 유튜브요약 페이지 -->
+                <div id="youtube-summary-page" class="page">
+                    <div class="page-content">
+                        <h3>유튜브 영상 요약</h3>
+                        <div class="input-group">
+                            <input type="text" class="input-url" placeholder="YouTube URL을 입력하세요">
+                            <button class="btn btn-primary">요약하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 프롬프트제작 페이지 -->
+                <div id="prompt-creation-page" class="page">
+                    <div class="page-content">
+                        <h3>AI 프롬프트 제작</h3>
+                        <div class="prompt-builder">
+                            <textarea class="editor" placeholder="프롬프트를 작성하세요..."></textarea>
+                            <div class="editor-actions">
+                                <button class="btn btn-primary">템플릿 저장</button>
+                                <button class="btn btn-secondary">테스트</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 바이브코딩 페이지 -->
+                <div id="vibe-coding-page" class="page">
+                    <div class="page-content">
+                        <h3>바이브 코딩</h3>
+                        <div class="code-editor-container">
+                            <textarea class="code-editor" placeholder="코드를 작성하세요..."></textarea>
+                            <div class="editor-actions">
+                                <button class="btn btn-primary">실행</button>
+                                <button class="btn btn-secondary">저장</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 설계 페이지 -->
+                <div id="design-page" class="page">
+                    <div class="page-content">
+                        <h3>프로젝트 설계</h3>
+                        <div class="card-grid">
+                            <div class="card">
+                                <h4>새 프로젝트</h4>
+                                <p>새로운 프로젝트 설계를 시작하세요.</p>
+                                <button class="btn btn-primary">설계 시작</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 부동산정보 페이지 -->
+                <div id="real-estate-page" class="page">
+                    <div class="page-content">
+                        <h3>부동산 정보</h3>
+                        <div class="info-cards">
+                            <div class="info-card">
+                                <h4>매물 정보</h4>
+                                <p>관심 지역의 매물 정보를 확인하세요.</p>
+                            </div>
+                            <div class="info-card">
+                                <h4>시세 분석</h4>
+                                <p>부동산 시세 동향을 분석합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 주식정보 페이지 -->
+                <div id="stock-page" class="page">
+                    <div class="page-content">
+                        <h3>주식 정보</h3>
+                        <div class="info-cards">
+                            <div class="info-card">
+                                <h4>관심 종목</h4>
+                                <p>관심 종목을 등록하고 관리하세요.</p>
+                            </div>
+                            <div class="info-card">
+                                <h4>시장 동향</h4>
+                                <p>주요 시장 지수와 동향을 확인합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 오른쪽 사이드바 -->
+        <aside class="sidebar-right">
+            <!-- 즐겨찾기 섹션 -->
+            <div class="widget">
+                <h3>⭐ 즐겨찾기</h3>
+                <div class="bookmarks">
+                    <div class="bookmark-item" draggable="true">
+                        <span class="bookmark-icon">🔖</span>
+                        <span class="bookmark-text">즐겨찾는 프롬프트</span>
+                    </div>
+                    <div class="bookmark-item" draggable="true">
+                        <span class="bookmark-icon">📝</span>
+                        <span class="bookmark-text">진행 중인 글</span>
+                    </div>
+                    <div class="bookmark-item" draggable="true">
+                        <span class="bookmark-icon">💼</span>
+                        <span class="bookmark-text">프로젝트 문서</span>
+                    </div>
+                    <button class="btn-add">+ 추가</button>
+                </div>
+            </div>
+
+            <!-- 자기관리 섹션 -->
+            <div class="widget">
+                <h3>📋 자기관리</h3>
+                <div class="self-management">
+                    <div class="habit-tracker">
+                        <h4>오늘의 목표</h4>
+                        <div class="habit-list">
+                            <label class="habit-item">
+                                <input type="checkbox">
+                                <span>독서 30분</span>
+                            </label>
+                            <label class="habit-item">
+                                <input type="checkbox">
+                                <span>글쓰기</span>
+                            </label>
+                            <label class="habit-item">
+                                <input type="checkbox">
+                                <span>코딩 연습</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="progress-tracker">
+                        <h4>이번 주 진행률</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                        <p class="progress-text">65% 완료</p>
+                    </div>
+                    <button class="btn-add">+ 목표 추가</button>
+                </div>
+            </div>
+
+            <!-- 빠른 노트 -->
+            <div class="widget">
+                <h3>📌 빠른 노트</h3>
+                <textarea class="quick-note" placeholder="빠른 메모..."></textarea>
+                <button class="btn btn-secondary btn-small">저장</button>
+            </div>
+        </aside>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
