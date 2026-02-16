@@ -1,0 +1,237 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== 경매 물건 =====
+model AuctionItem {
+  id                 String    @id @default(cuid())
+  sourceName         String    // 데이터 소스 이름 (예: "테라경매", "지지옥션" 등)
+  sourceUrl          String?   // 원본 URL
+  caseNumber         String    // 사건번호
+  court              String    // 법원명
+  eventRound         Int       @default(1) // 회차
+
+  // 물건 정보
+  propertyType       String    // 물건종류 (아파트, 오피스텔, 다세대, 상가, 토지, 공장, 임야 등)
+  address            String    // 주소
+  regionSiDo         String    // 시/도
+  regionSiGunGu      String    // 시/군/구
+  regionEupMyeonDong String?   // 읍/면/동
+  lat                Float?    // 위도
+  lng                Float?    // 경도
+
+  // 가격 정보
+  appraisalPrice     BigInt    // 감정가 (원)
+  minimumBidPrice    BigInt    // 최저입찰가 (원)
+  bidDate            DateTime  // 입찰일
+  status             String    @default("진행") // 진행, 낙찰, 유찰, 취하
+
+  // 사진
+  photoUrls          String[]  // 사진 URL 배열
+
+  // 점유 및 권리
+  occupancyStatus    String?   // 점유상태 (공실, 점유, 불명)
+  tenantNotes        String?   // 임차인 관련 메모
+  rightsNotes        String?   // 권리관계 요약
+  riskFlags          String[]  // 리스크 플래그 (유치권, 법정지상권, 분묘기지권 등)
+
+  // 이색 태그
+  unusualTags        String[]  // 이색물건 태그 (지분경매, 섬/오지, 개발이슈 등)
+
+  // 관리자 메모
+  editorNote         String?   // 에디터 노트
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  results            AuctionResult[]
+  recommendations    RecommendationSnapshot[]
+  watchlists         Watchlist[]
+
+  @@index([status])
+  @@index([bidDate])
+  @@index([propertyType])
+  @@index([regionSiDo, regionSiGunGu])
+  @@index([unusualTags])
+}
+
+// ===== 경매 결과 =====
+model AuctionResult {
+  id              String    @id @default(cuid())
+  itemId          String
+  winningBidPrice BigInt    // 낙찰가 (원)
+  bidderCount     Int       // 입찰자 수
+  resultDate      DateTime  // 낙찰일
+
+  createdAt       DateTime  @default(now())
+
+  item            AuctionItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@index([resultDate])
+}
+
+// ===== 추천 스냅샷 =====
+model RecommendationSnapshot {
+  id        String   @id @default(cuid())
+  itemId    String
+  score     Float    // 추천 점수 (0~100)
+  reasons   Json     // 추천 사유 (배열)
+  weights   Json     // 가중치 구성
+  createdAt DateTime @default(now())
+
+  item      AuctionItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@index([score])
+  @@index([createdAt])
+}
+
+// ===== 트렌드 스냅샷 =====
+model TrendSnapshot {
+  id           String   @id @default(cuid())
+  date         DateTime // 집계 날짜
+  regionKey    String   // 지역 키 (예: "서울-강남구", "전국")
+  propertyType String   // 물건종류 (또는 "전체")
+  metrics      Json     // 집계 지표 JSON
+
+  createdAt    DateTime @default(now())
+
+  @@unique([date, regionKey, propertyType])
+  @@index([date])
+  @@index([regionKey])
+  @@index([propertyType])
+}
+
+// ===== 심리 지수 스냅샷 =====
+model PsychologyIndexSnapshot {
+  id           String   @id @default(cuid())
+  date         DateTime // 집계 날짜
+  regionKey    String   // 지역 키
+  propertyType String   // 물건종류
+  indexValue   Float    // 심리 지수 (0~100)
+  components   Json     // 구성요소 (competition, aggression, liquidity, riskAversion)
+
+  createdAt    DateTime @default(now())
+
+  @@unique([date, regionKey, propertyType])
+  @@index([date])
+  @@index([regionKey])
+  @@index([propertyType])
+}
+
+// ===== 사용자 =====
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // 해시된 비밀번호 (이메일 로그인용)
+  role          String    @default("user") // user, admin
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  watchlists    Watchlist[]
+  savedSearches SavedSearch[]
+}
+
+// NextAuth 관련 모델
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ===== 관심목록 =====
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  createdAt DateTime @default(now())
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item AuctionItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+  @@index([userId])
+  @@index([itemId])
+}
+
+// ===== 저장된 검색 =====
+model SavedSearch {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String   // 검색 이름
+  filters     Json     // 필터 조건
+  notifyEmail Boolean  @default(false) // 이메일 알림 여부 (MVP에서는 UI만)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ===== 추천 설정 (관리자용) =====
+model RecommendationConfig {
+  id                   String   @id @default(cuid())
+  discountWeight       Float    @default(0.30)  // 할인매력 가중치
+  competitionWeight    Float    @default(0.25)  // 경쟁도 가중치
+  auctionRoundWeight   Float    @default(0.20)  // 유찰상태 가중치
+  riskWeight           Float    @default(0.15)  // 리스크 가중치
+  urgencyWeight        Float    @default(0.10)  // 입찰 임박성 가중치
+
+  updatedAt            DateTime @updatedAt
+}
+
+// ===== 심리 지수 설정 (관리자용) =====
+model PsychologyIndexConfig {
+  id                    String   @id @default(cuid())
+  competitionWeight     Float    @default(0.30)  // 열기(경쟁) 가중치
+  aggressionWeight      Float    @default(0.30)  // 공격성 가중치
+  liquidityWeight       Float    @default(0.25)  // 유동성 가중치
+  riskAversionWeight    Float    @default(0.15)  // 리스크회피 가중치
+
+  updatedAt             DateTime @updatedAt
+}
