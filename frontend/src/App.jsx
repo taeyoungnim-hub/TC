@@ -88,7 +88,8 @@ function App() {
   const sendToAllAIs = async () => {
     if (!globalMessage.trim()) return;
 
-    const activeAIs = enabledAIs.filter(aiId => enabledAIs.includes(aiId));
+    const messageToSend = globalMessage; // save before clearing
+    const activeAIs = enabledAIs.slice();
 
     if (activeAIs.length === 0) {
       alert('최소 1개 이상의 AI를 활성화해주세요.');
@@ -100,7 +101,7 @@ function App() {
     activeAIs.forEach(aiId => {
       updatedHistories[aiId] = [
         ...updatedHistories[aiId],
-        { role: 'user', content: globalMessage }
+        { role: 'user', content: messageToSend }
       ];
     });
     setChatHistories(updatedHistories);
@@ -112,7 +113,7 @@ function App() {
     if (selectedMode === 'deep_research') {
       setIsDeepResearch(true);
       try {
-        const result = await chatAPI.deepResearch(activeAIs, globalMessage, selectedSOP, apiKeys);
+        const result = await chatAPI.deepResearch(activeAIs, messageToSend, selectedSOP, apiKeys);
 
         if (result.success) {
           // Update histories with phase 1 results
@@ -137,7 +138,7 @@ function App() {
     } else {
       // Regular parallel chat
       try {
-        const result = await chatAPI.parallelChat(activeAIs, globalMessage, selectedMode, selectedSOP, apiKeys);
+        const result = await chatAPI.parallelChat(activeAIs, messageToSend, selectedMode, selectedSOP, apiKeys);
 
         if (result.success) {
           const newHistories = { ...chatHistories };
@@ -232,7 +233,7 @@ function App() {
 
       {/* Chat Panels Grid */}
       <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-3 gap-4 p-6">
+        <div className="h-full grid grid-cols-6 gap-2 p-4">
           {AI_MODELS.map((ai) => (
             <ChatPanel
               key={ai.id}
