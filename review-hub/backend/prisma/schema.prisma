@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 검색 대상 엔티티 (장소/제품)
+model Entity {
+  id          String       @id @default(uuid())
+  name        String       // 정규화된 검색어
+  rawQuery    String       // 원본 검색어
+  category    EntityCategory
+  region      String?      // 지역 (장소인 경우)
+  language    String       @default("ko")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  reviewItems ReviewItem[]
+  summaries   Summary[]
+  searches    SearchLog[]
+
+  @@index([name])
+  @@index([category])
+}
+
+enum EntityCategory {
+  RESTAURANT   // 음식점/카페
+  PRODUCT      // 가전/전자제품/의류/운동화
+  TRAVEL       // 여행지/숙소
+  UNKNOWN
+}
+
+// 출처 메타 정보
+model Source {
+  id          String       @id @default(uuid())
+  domain      String       @unique
+  name        String       // 표시용 이름
+  logoUrl     String?
+  type        SourceType
+  isAllowed   Boolean      @default(true)  // allowlist
+  robotsTxt   String?      // 캐시된 robots.txt
+  robotsAt    DateTime?
+  rateLimit   Int          @default(5)     // req/min
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  reviewItems ReviewItem[]
+
+  @@index([domain])
+  @@index([isAllowed])
+}
+
+enum SourceType {
+  BLOG         // 블로그 (네이버, 티스토리 등)
+  COMMUNITY    // 커뮤니티 (클리앙, 뽐뿌 등)
+  MAP          // 지도 (카카오맵, 구글맵)
+  SHOPPING     // 쇼핑몰 리뷰
+  VIDEO        // 동영상 플랫폼
+  NEWS         // 뉴스 (기본 제외)
+  OTHER
+}
+
+// 개별 리뷰 아이템
+model ReviewItem {
+  id            String     @id @default(uuid())
+  entityId      String
+  sourceId      String
+
+  url           String     // 원문 URL
+  urlHash       String     @unique  // SHA256(url) - 중복 방지
+
+  title         String?
+  snippet       String?    // 200~300자 발췌 (원문 전체 저장 금지)
+  authorName    String?
+  publishedAt   DateTime?
+
+  rating        Float?     // 0~5 또는 0~10
+  ratingScale   Int?       // 5 or 10
+
+  isReview      Boolean    @default(false)  // 리뷰성 여부
+  reviewScore   Float?     // 리뷰성 확률 0~1
+  sentiment     Sentiment?
+
+  keywords      String[]   // 추출 키워드
+  pros          String[]   // 장점
+  cons          String[]   // 단점
+
+  fetchedAt     DateTime   @default(now())
+  processedAt   DateTime?
+
+  entity        Entity     @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  source        Source     @relation(fields: [sourceId], references: [id])
+
+  @@index([entityId])
+  @@index([sourceId])
+  @@index([isReview])
+  @@index([publishedAt(sort: Desc)])
+  @@index([urlHash])
+}
+
+enum Sentiment {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+  MIXED
+}
+
+// 요약 (엔티티 전체 또는 소스별)
+model Summary {
+  id            String     @id @default(uuid())
+  entityId      String
+  sourceId      String?    // null이면 전체 요약
+
+  conclusion    String     // 한 줄 결론
+  pros          String[]   // 장점 TOP3~5
+  cons          String[]   // 단점 TOP3~5
+  keywords      String[]   // 주요 키워드
+
+  recommendFor  String[]   // 추천 대상
+  notFor        String[]   // 비추천 대상
+
+  trustScore    Float      // 0~100 신뢰도 점수
+  reviewCount   Int        @default(0)
+  sourceDiversity Int      @default(0)
+
+  generatedAt   DateTime   @default(now())
+  expiresAt     DateTime   // 캐시 만료
+
+  entity        Entity     @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([entityId])
+  @@index([sourceId])
+  @@index([expiresAt])
+}
+
+// 검색 로그 (인기 키워드 집계)
+model SearchLog {
+  id        String   @id @default(uuid())
+  query     String
+  entityId  String?
+  userAgent String?
+  ip        String?  // 해시 처리 권장
+  createdAt DateTime @default(now())
+
+  entity    Entity?  @relation(fields: [entityId], references: [id])
+
+  @@index([query])
+  @@index([createdAt(sort: Desc)])
+}
+
+// 인기 검색어 집계 (주기적 배치 업데이트)
+model TrendingKeyword {
+  id        String   @id @default(uuid())
+  keyword   String   @unique
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@index([count(sort: Desc)])
+}
