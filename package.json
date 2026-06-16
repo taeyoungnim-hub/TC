@@ -1,0 +1,19 @@
+{
+  "name": "multi-ai-chat-app",
+  "version": "1.0.0",
+  "description": "6개 AI를 병렬로 사용하는 웹 채팅 앱",
+  "scripts": {
+    "install-all": "cd frontend && npm install && cd ../backend && npm install",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start"
+  },
+  "keywords": ["ai", "chat", "multi-ai", "react", "express"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
